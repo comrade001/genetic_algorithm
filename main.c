@@ -6,10 +6,12 @@ matematica:
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 //Definicion de la estructura INDIVIDUO
 typedef struct  {
-    int* cromosoma;   //genotipo
+    unsigned char* cromosoma;   //genotipo
     float* valor; //fenotipo (convierte el valor bit a decimal)
     unsigned int* BitPorGen;
     float fitness;
@@ -26,23 +28,40 @@ const unsigned int Bits_por_Gen=10;
 //INDIVIDUO Pob[Numero_de_Individuos];
 
 /*Prototipo de funciones*/
-void InicializarPoblacion(POBLACION *pPob, const unsigned int NumeroGenes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos);
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos);
+void InicializarPoblacion(POBLACION *pPob, const unsigned int NumeroGenes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos);
+void EvaluarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Genes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos);
+void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos);
 
 int main()
 {
 	POBLACION *pPob;
 	pPob=CrearPoblacion(Numero_de_Genes, Bits_por_Gen, Numero_de_Individuos);
 	InicializarPoblacion(pPob, Numero_de_Genes, Bits_por_Gen, Numero_de_Individuos);
-	printf("Print Individuos\n");
-	for(int i=0; i<Numero_de_Individuos; i++)
-	{
-		for(int j=0; j<Numero_de_Genes*Bits_por_Gen; j++)
-			printf("%i", pPob->pInd[i].cromosoma[j]);
-		printf("\n");
-	}
+	EvaluarPoblacion(pPob, Numero_de_Genes, Bits_por_Gen, Numero_de_Individuos);
 
 	return 0;
+}
+
+void EvaluarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Genes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos)
+{	
+//	int n=0, count=0, i, j;
+//	for(i=0; i<Numero_de_Individuos; i++)
+//	{
+//		for(j=0; j<Numero_de_Genes*Bits_por_Gen; j++)
+//		{
+//			printf("%c", pPob->pInd[i].cromosoma[j]);
+//			if(pPob->pInd[i].cromosoma[j] == '1')
+//				n=n+pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count);
+//			count++;
+//		}		
+//		printf("\n%i\n",n);
+//		n=0;
+//		count=0;
+//		printf("\n");
+//	}
+	
+
 }
 
 void InicializarPoblacion(POBLACION *pPob, const unsigned int NumeroGenes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos)
@@ -56,9 +75,9 @@ void InicializarPoblacion(POBLACION *pPob, const unsigned int NumeroGenes, const
 		{
 			random=((double)rand()/RAND_MAX);
 			if(random < 0.5)
-				pPob->pInd[i].cromosoma[j]=0;
+				pPob->pInd[i].cromosoma[j]='0';
 			else
-				pPob->pInd[i].cromosoma[j]=1;
+				pPob->pInd[i].cromosoma[j]='1';
 		}
 }
 
@@ -83,9 +102,9 @@ POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int
 
 	for(i=0; i<Numero_de_Individuos; i++)
 		{
-			//pPob->pInd[i].cromosoma=(unsigned char*)malloc(sizeof(unsigned char)*Numero_de_Genes*BitsGen);
-			pPob->pInd[i].cromosoma=(int*)malloc(sizeof(int)*Numero_de_Genes*BitsGen);
-			pPob->pInd[i].valor=(float*)malloc(sizeof(float)*Numero_de_Genes);	
+			pPob->pInd[i].cromosoma=(unsigned char*)malloc(sizeof(unsigned char)*Numero_de_Genes*BitsGen);
+			//pPob->pInd[i].cromosoma=(int*)malloc(sizeof(int)*Numero_de_Genes*BitsGen);
+			pPob->pInd[i].valor=(float*)malloc(sizeof(float)*Numero_de_Individuos*Numero_de_Genes);	
 			pPob->pInd[i].BitPorGen=(unsigned int*)malloc(sizeof(unsigned int)*BitsGen);
 		}
 			//if(pInd->valor == NULL)
@@ -94,6 +113,21 @@ POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int
 	return(pPob);
 }
 
+void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos)
+{
+	unsigned int i;
+	/*Liberar memoria para cada individuo*/
+	for(i=0; i<Numero_de_Individuos; i++)
+	{
+		free(pPob->pInd[i].cromosoma);
+		free(pPob->pInd[i].valor);
+		free(pPob->pInd[i].BitPorGen);
+	}
+	/*Liberar memoria de los individuos*/
+	free(pPob->pInd);
+	/*Liberar memoria de la poblacion*/
+	free(pPob);
+}
 
 
 
