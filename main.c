@@ -45,23 +45,35 @@ int main()
 
 void EvaluarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Genes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos)
 {	
-//	int n=0, count=0, i, j;
-//	for(i=0; i<Numero_de_Individuos; i++)
-//	{
-//		for(j=0; j<Numero_de_Genes*Bits_por_Gen; j++)
-//		{
-//			printf("%c", pPob->pInd[i].cromosoma[j]);
-//			if(pPob->pInd[i].cromosoma[j] == '1')
-//				n=n+pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count);
-//			count++;
-//		}		
-//		printf("\n%i\n",n);
-//		n=0;
-//		count=0;
-//		printf("\n");
-//	}
-	
+	int n=1, m=0, count=0, i, j, k;
+	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
+	{
+		for(j=0; j<Numero_de_Genes*Bits_por_Gen; j++)
+		{
+			printf("%c", pPob->pInd[i].cromosoma[j]);
+			//if(pPob->pInd[i].cromosoma[j] == '1')
+			//	n=n+pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count);
+			//n=n+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count)));
+			if(j<9)
+				n=n+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,(Bits_por_Gen-1)-count)));
+			if(j>9)
+				m=m+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count)));
+			count++;
+		}		
+		printf("\n%i\n%i",n, m);
+		pPob->pInd[i].valor[k]=(float)((n/1024.0)*10)+0;
+		pPob->pInd[i].valor[k+1]=(float)((m/1024.0)*10)+0;
+		n=1;
+		m=0;
+		count=0;
+		printf("\n");
+	}
 
+	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
+	{
+		printf("%f\n", pPob->pInd[i].valor[k]);
+		printf("%f\n", pPob->pInd[i].valor[k+1]);
+	}
 }
 
 void InicializarPoblacion(POBLACION *pPob, const unsigned int NumeroGenes, const unsigned int BitsGen, const unsigned int Numero_de_Individuos)
