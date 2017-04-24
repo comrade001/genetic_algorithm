@@ -2,6 +2,8 @@
 
 Este es un proyecto para la clase de Inteligencia Artificial impartido por el Dr. Carlos Hugo García C. de la Universidad de Guanajuato, Campus Irapuato-Salamanca, en la cual se hará uso de Algoritmos Genéticos para la maximización de una función.
 
+![picture alt](https://www.ugto.mx/internacional/images/Logos/LogoColor.jpg)
+
 ## Funcionamiento de un algoritmo genético básico
 
 Un algoritmo genético puede presentar diversas variaciones, dependiendo de cómo se aplican los operadores genéticos (cruzamiento, mutación), de cómo se realiza la selección y de cómo se decide el reemplazo de los individuos para formar la nueva población. En general, el pseudocódigo consiste de los siguientes pasos:
