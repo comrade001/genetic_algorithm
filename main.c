@@ -7,6 +7,8 @@ matematica:
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+#include <time.h>
 
 //Definicion de la estructura INDIVIDUO
 typedef struct  {
@@ -15,7 +17,8 @@ typedef struct  {
 	/*Bits que tiene cada Gen, pueden ser tamaños distintos 
 	 * para cada Gen, segun sea el caso.*/
     unsigned int* BitsPorGen;
-    float fitness;
+    float fit;
+	float best_fit;
 }INDIVIDUO;
 
 typedef struct{
@@ -26,7 +29,7 @@ typedef struct{
 /*Variables globales*/
 const unsigned int Numero_de_Genes=2;
 const unsigned int Numero_de_Individuos=5;
-//const unsigned int Bits_por_Gen=10;
+const unsigned int Bits_por_Gen=10;
 const unsigned int GenX=10, GenY=10;
 const unsigned int LimitInf=0;
 const unsigned int LimitSup=10;
@@ -36,20 +39,48 @@ POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int
 void InicializarPoblacion(POBLACION *pPob);
 void EvaluarPoblacion(POBLACION *pPob);
 void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos);
+void SeleccionarPoblacion(POBLACION *pPob);
 
 int main()
 {
+	srand(time(NULL));
 	POBLACION *pPob;
 	pPob=CrearPoblacion(Numero_de_Genes, Numero_de_Individuos);
 	InicializarPoblacion(pPob);
 	EvaluarPoblacion(pPob);
+	SeleccionarPoblacion(pPob);
+	
+	//EliminarPoblacion(pPob, Numero_de_Individuos);
 
 	return 0;
 }
 
+void SeleccionarPoblacion(POBLACION *pPob)
+{
+	unsigned int i, flecha=0;
+	float f_t=0.0, p_i[Numero_de_Individuos], offset=0.0;
+	float random=rand()/(float)RAND_MAX;
+
+	for(i=0; i<Numero_de_Individuos; i++)
+		f_t=f_t+pPob->pInd[i].fit;
+
+	/*Metodo de la ruleta*/
+	for(i=0; i<Numero_de_Individuos; i++)
+	{
+		p_i[i]=pPob->pInd[i].fit/f_t;
+		offset+=p_i[i];
+		if(random<offset)
+		{
+			flecha=i;
+			break;
+		}
+	}
+}
+
 void EvaluarPoblacion(POBLACION *pPob)
 {	
-	int n=1, m=0, count=0, i, j, k;
+	float n=1, m=0;
+	unsigned int count=0, i, j, k;
 	unsigned int max_bitX=pow(2, GenX);
 	unsigned int max_bitY=pow(2, GenY);
 	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
@@ -57,37 +88,30 @@ void EvaluarPoblacion(POBLACION *pPob)
 		for(j=0; j<(GenX+GenY); j++)
 		{
 			printf("%c", pPob->pInd[i].cromosoma[j]);
-			//if(pPob->pInd[i].cromosoma[j] == '1')
-			//	n=n+pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count);
-			//n=n+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,(Numero_de_Genes*Bits_por_Gen-1)-count)));
 
 			if(j<(GenX+GenY)/Numero_de_Genes-1)
-				n=n+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,((GenX+GenY)/Numero_de_Genes-1)-count)));
+				n=n+((pPob->pInd[i].cromosoma[j]-'0')*(pow(2,((GenX+GenY)/Numero_de_Genes-1)-count)));
 			if(j>(GenX+GenY)/Numero_de_Genes-1)
-				m=m+((pPob->pInd[i].cromosoma[j]-'0') * (pow(2,((GenX+GenY)-1)-count)));
+				m=m+((pPob->pInd[i].cromosoma[j]-'0')*(pow(2,((GenX+GenY)-1)-count)));
 			count++;
 		}		
-		printf("\n%i\n%i",n, m);
+		printf("\n%f\n%f\n",n, m);
 		pPob->pInd[i].valor[k]=(float)((n/(1.0*max_bitX))*LimitSup)+LimitInf;
 		pPob->pInd[i].valor[k+1]=(float)((m/(1.0*max_bitY))*LimitSup)+LimitInf;
+		
+		printf("%f, %f", pPob->pInd[i].valor[k], pPob->pInd[i].valor[k+1]);
+		
+		pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[k]-5)*(pPob->pInd[i].valor[k]-5)
+				-(pPob->pInd[i].valor[k+1]-5)*(pPob->pInd[i].valor[k+1]-5));
 		n=1;
 		m=0;
 		count=0;
-		printf("\n");
+		printf("\n\n");
 	}
 
-	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
-	{
-		printf("%f\n", pPob->pInd[i].valor[k]);
-		printf("%f\n", pPob->pInd[i].valor[k+1]);
-	}
+	for(i=0; i<Numero_de_Individuos; i++)
+		printf("%f\n", pPob->pInd[i].fit);
 
-/*Algoritmo Genetico
-Se busca maximizar la siguiente funcion
-matematica:
-    f(x,y)=50-(x-5)^2-(y-5)^2
-*/
-	
 }
 
 void InicializarPoblacion(POBLACION *pPob)
@@ -105,6 +129,13 @@ void InicializarPoblacion(POBLACION *pPob)
 			else
 				pPob->pInd[i].cromosoma[j]='1';
 		}
+
+	for(i=0; i<Numero_de_Individuos; i++)
+	{
+			pPob->pInd[i].BitsPorGen[0]=GenX;
+			pPob->pInd[i].BitsPorGen[1]=GenY;
+	}
+
 }
 
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos)
@@ -133,8 +164,6 @@ POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int
 			pPob->pInd[i].valor=(float*)malloc(sizeof(float)*Numero_de_Genes);	
 			pPob->pInd[i].BitsPorGen=(unsigned int*)malloc(sizeof(unsigned int)*Numero_de_Genes);
 		}
-			//if(pInd->valor == NULL)
-			//	printf("Error al asignar memoria");
 
 	return(pPob);
 }
@@ -154,7 +183,3 @@ void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos)
 	/*Liberar memoria de la poblacion*/
 	free(pPob);
 }
-
-
-
-
