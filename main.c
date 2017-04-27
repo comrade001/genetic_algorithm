@@ -33,13 +33,15 @@ const unsigned int Bits_por_Gen=10;
 const unsigned int GenX=10, GenY=10;
 const unsigned int LimitInf=0;
 const unsigned int LimitSup=10;
+const float pc=0.8; 
 
 /*Prototipo de funciones*/
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos);
 void InicializarPoblacion(POBLACION *pPob);
 void EvaluarPoblacion(POBLACION *pPob);
 void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos);
-void SeleccionarPoblacion(POBLACION *pPob);
+int SeleccionarPoblacion(POBLACION *pPob);
+void CruzarPoblacion(POBLACION *pPob, int, int);
 
 int main()
 {
@@ -48,33 +50,51 @@ int main()
 	pPob=CrearPoblacion(Numero_de_Genes, Numero_de_Individuos);
 	InicializarPoblacion(pPob);
 	EvaluarPoblacion(pPob);
-	SeleccionarPoblacion(pPob);
+	CruzarPoblacion(pPob, SeleccionarPoblacion(pPob),SeleccionarPoblacion(pPob));
 	
 	//EliminarPoblacion(pPob, Numero_de_Individuos);
 
 	return 0;
 }
 
-void SeleccionarPoblacion(POBLACION *pPob)
+void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
 {
-	unsigned int i, flecha=0;
+	unsigned int i, j, px;
+	float random=rand()/(float)RAND_MAX;
+
+	if(random<pc)
+	{
+		px = (rand()%(GenX+GenY));
+		printf("px=%i\n", px);
+		
+	}
+		
+}
+
+int SeleccionarPoblacion(POBLACION *pPob)
+{
+	unsigned int i;
 	float f_t=0.0, p_i[Numero_de_Individuos], offset=0.0;
 	float random=rand()/(float)RAND_MAX;
 
 	for(i=0; i<Numero_de_Individuos; i++)
 		f_t=f_t+pPob->pInd[i].fit;
 
+	for(i=0; i<Numero_de_Individuos; i++)
+		p_i[i]=pPob->pInd[i].fit/f_t;
+
 	/*Metodo de la ruleta*/
 	for(i=0; i<Numero_de_Individuos; i++)
 	{
-		p_i[i]=pPob->pInd[i].fit/f_t;
 		offset+=p_i[i];
 		if(random<offset)
 		{
-			flecha=i;
-			break;
+			//flecha=i;
+			//break;
+			return i;
 		}
 	}
+
 }
 
 void EvaluarPoblacion(POBLACION *pPob)
