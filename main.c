@@ -10,15 +10,25 @@ matematica:
 #include <string.h>
 #include <time.h>
 
+//Definicion de la estructura GEN
+typedef struct{
+	unsigned char* gen;
+}GEN;
+
 //Definicion de la estructura INDIVIDUO
 typedef struct  {
     unsigned char* cromosoma;   //genotipo
+	unsigned char* bits_GenX;
     float* valor; //fenotipo (convierte el valor bit a decimal)
 	/*Bits que tiene cada Gen, pueden ser tamaños distintos 
 	 * para cada Gen, segun sea el caso.*/
     unsigned int* BitsPorGen;
+	/*Valor decimal de cada uno de sus 
+	 * genes*/
+	unsigned int* gen_decimal;
     float fit;
 	float best_fit;
+	GEN* pGen;
 }INDIVIDUO;
 
 typedef struct{
@@ -43,6 +53,7 @@ void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos)
 int SeleccionarPoblacion(POBLACION *pPob);
 void CruzarPoblacion(POBLACION *pPob, int, int);
 
+
 int main()
 {
 	srand(time(NULL));
@@ -64,10 +75,33 @@ void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
 
 	if(random<pc)
 	{
+		for(j=0; j<20; j++)
+			printf("%c", pPob->pInd[padre].cromosoma[j]);
+		printf("\t");
+		for(j=0; j<20; j++)
+			printf("%c", pPob->pInd[madre].cromosoma[j]);
+		printf("\n");
+
 		px = (rand()%(GenX+GenY));
+		unsigned char aux1[GenX+GenY], aux2[GenX+GenY];
 		printf("px=%i\n", px);
+		memcpy(aux2, pPob->pInd[padre].cromosoma, px*sizeof(unsigned char));
+		memcpy(aux1, pPob->pInd[madre].cromosoma, px*sizeof(unsigned char));
+		memcpy(&aux1[px], &pPob->pInd[padre].cromosoma[px], ((GenX+GenY)-px)*sizeof(unsigned char));
+		memcpy(&aux2[px], &pPob->pInd[madre].cromosoma[px], ((GenX+GenY)-px)*sizeof(unsigned char));
 		
+		memcpy(pPob->pInd[padre].cromosoma, aux1, (GenX+GenY)*sizeof(unsigned char));	
+		memcpy(pPob->pInd[madre].cromosoma, aux2, (GenX+GenY)*sizeof(unsigned char));
+		//printf("%s\t%s\n", aux1, aux2);
+		for(j=0; j<20; j++)
+			printf("%c", pPob->pInd[padre].cromosoma[j]);
+		printf("\t");
+		for(j=0; j<20; j++)
+			printf("%c", pPob->pInd[madre].cromosoma[j]);
+		printf("\n");
+	
 	}
+
 		
 }
 
@@ -97,12 +131,15 @@ int SeleccionarPoblacion(POBLACION *pPob)
 
 }
 
+
+
 void EvaluarPoblacion(POBLACION *pPob)
 {	
 	float n=1, m=0;
 	unsigned int count=0, i, j, k;
 	unsigned int max_bitX=pow(2, GenX);
 	unsigned int max_bitY=pow(2, GenY);
+	/*Decodificacion de los individuos*/
 	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
 	{
 		for(j=0; j<(GenX+GenY); j++)
@@ -116,11 +153,13 @@ void EvaluarPoblacion(POBLACION *pPob)
 			count++;
 		}		
 		printf("\n%f\n%f\n",n, m);
+		/*Calculo del fenotipo de los individuos*/
 		pPob->pInd[i].valor[k]=(float)((n/(1.0*max_bitX))*LimitSup)+LimitInf;
 		pPob->pInd[i].valor[k+1]=(float)((m/(1.0*max_bitY))*LimitSup)+LimitInf;
 		
 		printf("%f, %f", pPob->pInd[i].valor[k], pPob->pInd[i].valor[k+1]);
 		
+		/*Evaluacion de la funcion para obtener fitness*/
 		pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[k]-5)*(pPob->pInd[i].valor[k]-5)
 				-(pPob->pInd[i].valor[k+1]-5)*(pPob->pInd[i].valor[k+1]-5));
 		n=1;
