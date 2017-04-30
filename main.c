@@ -10,11 +10,6 @@ matematica:
 #include <string.h>
 #include <time.h>
 
-//Definicion de la estructura GEN
-typedef struct{
-	unsigned char* gen;
-}GEN;
-
 //Definicion de la estructura INDIVIDUO
 typedef struct  {
     unsigned char* cromosoma;   //genotipo
@@ -28,7 +23,6 @@ typedef struct  {
 	unsigned int* gen_decimal;
     float fit;
 	float best_fit;
-	GEN* pGen;
 }INDIVIDUO;
 
 typedef struct{
@@ -53,7 +47,6 @@ void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos)
 int SeleccionarPoblacion(POBLACION *pPob);
 void CruzarPoblacion(POBLACION *pPob, int, int);
 
-
 int main()
 {
 	srand(time(NULL));
@@ -63,22 +56,22 @@ int main()
 	EvaluarPoblacion(pPob);
 	CruzarPoblacion(pPob, SeleccionarPoblacion(pPob),SeleccionarPoblacion(pPob));
 	
-	//EliminarPoblacion(pPob, Numero_de_Individuos);
+	EliminarPoblacion(pPob, Numero_de_Individuos);
 
 	return 0;
 }
 
 void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
 {
-	unsigned int i, j, px;
+	unsigned int j, px;
 	float random=rand()/(float)RAND_MAX;
 
 	if(random<pc)
 	{
-		for(j=0; j<20; j++)
+		for(j=0; j<(GenX+GenY); j++)
 			printf("%c", pPob->pInd[padre].cromosoma[j]);
 		printf("\t");
-		for(j=0; j<20; j++)
+		for(j=0; j<(GenX+GenY); j++)
 			printf("%c", pPob->pInd[madre].cromosoma[j]);
 		printf("\n");
 
@@ -99,10 +92,7 @@ void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
 		for(j=0; j<20; j++)
 			printf("%c", pPob->pInd[madre].cromosoma[j]);
 		printf("\n");
-	
-	}
-
-		
+	}		
 }
 
 int SeleccionarPoblacion(POBLACION *pPob)
@@ -128,7 +118,7 @@ int SeleccionarPoblacion(POBLACION *pPob)
 			return i;
 		}
 	}
-
+	return -1;
 }
 
 
@@ -140,7 +130,7 @@ void EvaluarPoblacion(POBLACION *pPob)
 	unsigned int max_bitX=pow(2, GenX);
 	unsigned int max_bitY=pow(2, GenY);
 	/*Decodificacion de los individuos*/
-	for(i=0, k=0; i<Numero_de_Individuos; i++, k+=2)
+	for(i=0; i<Numero_de_Individuos; i++)
 	{
 		for(j=0; j<(GenX+GenY); j++)
 		{
@@ -154,14 +144,14 @@ void EvaluarPoblacion(POBLACION *pPob)
 		}		
 		printf("\n%f\n%f\n",n, m);
 		/*Calculo del fenotipo de los individuos*/
-		pPob->pInd[i].valor[k]=(float)((n/(1.0*max_bitX))*LimitSup)+LimitInf;
-		pPob->pInd[i].valor[k+1]=(float)((m/(1.0*max_bitY))*LimitSup)+LimitInf;
+		pPob->pInd[i].valor[0]=(float)((n/(1.0*max_bitX))*LimitSup)+LimitInf;
+		pPob->pInd[i].valor[1]=(float)((m/(1.0*max_bitY))*LimitSup)+LimitInf;
 		
-		printf("%f, %f", pPob->pInd[i].valor[k], pPob->pInd[i].valor[k+1]);
+		printf("%f, %f", pPob->pInd[i].valor[0], pPob->pInd[i].valor[1]);
 		
 		/*Evaluacion de la funcion para obtener fitness*/
-		pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[k]-5)*(pPob->pInd[i].valor[k]-5)
-				-(pPob->pInd[i].valor[k+1]-5)*(pPob->pInd[i].valor[k+1]-5));
+		pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
+				-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
 		n=1;
 		m=0;
 		count=0;
