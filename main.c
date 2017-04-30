@@ -38,6 +38,7 @@ const unsigned int GenX=10, GenY=10;
 const unsigned int LimitInf=0;
 const unsigned int LimitSup=10;
 const float pc=0.8; 
+const float p_muta=0.3;
 
 /*Prototipo de funciones*/
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos);
@@ -45,20 +46,76 @@ void InicializarPoblacion(POBLACION *pPob);
 void EvaluarPoblacion(POBLACION *pPob);
 void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos);
 int SeleccionarPoblacion(POBLACION *pPob);
-void CruzarPoblacion(POBLACION *pPob, int, int);
+void CruzarPoblacion(POBLACION *pPob, int padre, int madre);
+void MutarPoblacion(POBLACION *pPob, int padre, int madre);
+void MostrarPoblacion(POBLACION *pPob);
 
 int main()
 {
+	unsigned int padre, madre;
 	srand(time(NULL));
 	POBLACION *pPob;
 	pPob=CrearPoblacion(Numero_de_Genes, Numero_de_Individuos);
 	InicializarPoblacion(pPob);
 	EvaluarPoblacion(pPob);
-	CruzarPoblacion(pPob, SeleccionarPoblacion(pPob),SeleccionarPoblacion(pPob));
+	padre = madre = SeleccionarPoblacion(pPob);
+	CruzarPoblacion(pPob, padre, madre);
+	printf("\nMutarPoblacion\n");
+	MutarPoblacion(pPob, padre, madre);
 	
 	EliminarPoblacion(pPob, Numero_de_Individuos);
 
 	return 0;
+}
+
+void MostrarPoblacion(POBLACION *pPob)
+{
+	unsigned int i, j;
+
+	for(i=0; i<Numero_de_Individuos; i++)
+		for(j=0; j<(GenX+GenY); j++)
+		printf("%c", pPob->pInd[i].cromosoma[j]);
+}
+
+void MutarPoblacion(POBLACION *pPob, int padre, int madre)
+{
+	unsigned int i, j;
+	float random;
+	
+	for(j=0; j<(GenX+GenY); j++)
+	{
+		random=((double)rand()/RAND_MAX);
+		if(random<p_muta)
+		{
+			for(i=0; i<(GenX+GenY); i++)
+				printf("%c", pPob->pInd[padre].cromosoma[i]);
+			
+			printf("\nMuto el bit: %i\n", j);
+			pPob->pInd[padre].cromosoma[j]^=1;
+			
+			for(i=0; i<(GenX+GenY); i++)
+				printf("%c", pPob->pInd[padre].cromosoma[i]);		
+			printf("\n");
+		}
+	}
+	printf("\n");
+	
+	for(j=0; j<(GenX+GenY); j++)
+	{
+		random=((double)rand()/RAND_MAX);
+		if(random<p_muta)
+		{
+			for(i=0; i<(GenX+GenY); i++)
+				printf("%c", pPob->pInd[madre].cromosoma[i]);
+			
+			printf("\nMuto el bit: %i\n", j);
+			pPob->pInd[madre].cromosoma[j]^=1;
+			
+			for(i=0; i<(GenX+GenY); i++)
+				printf("%c", pPob->pInd[madre].cromosoma[i]);		
+			printf("\n");
+		}
+	}
 }
 
 void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
@@ -86,10 +143,10 @@ void CruzarPoblacion(POBLACION *pPob, int padre, int madre)
 		memcpy(pPob->pInd[padre].cromosoma, aux1, (GenX+GenY)*sizeof(unsigned char));	
 		memcpy(pPob->pInd[madre].cromosoma, aux2, (GenX+GenY)*sizeof(unsigned char));
 		//printf("%s\t%s\n", aux1, aux2);
-		for(j=0; j<20; j++)
+		for(j=0; j<(GenX+GenY); j++)
 			printf("%c", pPob->pInd[padre].cromosoma[j]);
 		printf("\t");
-		for(j=0; j<20; j++)
+		for(j=0; j<(GenX+GenY); j++)
 			printf("%c", pPob->pInd[madre].cromosoma[j]);
 		printf("\n");
 	}		
@@ -126,7 +183,7 @@ int SeleccionarPoblacion(POBLACION *pPob)
 void EvaluarPoblacion(POBLACION *pPob)
 {	
 	float n=1, m=0;
-	unsigned int count=0, i, j, k;
+	unsigned int count=0, i, j;
 	unsigned int max_bitX=pow(2, GenX);
 	unsigned int max_bitY=pow(2, GenY);
 	/*Decodificacion de los individuos*/
