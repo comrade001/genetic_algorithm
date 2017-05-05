@@ -13,7 +13,7 @@ matematica:
 //Definicion de la estructura INDIVIDUO
 typedef struct  {
     unsigned char* cromosoma;   //genotipo
-    float* valor; //fenotipo (convierte el valor bit a decimal)
+    long double* valor; //fenotipo (convierte el valor bit a decimal)
     float fit;
 	float best_fit;
 }INDIVIDUO;
@@ -27,13 +27,13 @@ typedef struct{
 /*Variables globales*/
 const unsigned int Numero_de_Genes=2;
 const unsigned int Numero_de_Individuos=5;
-const unsigned int Bits_por_Gen=10;
-const unsigned int LimitInf=0;
-const unsigned int LimitSup=10;
+//const unsigned int Bits_por_Gen=10;
+const float LimitInf=-5.12;
+const float LimitSup=5.12;
 unsigned int MaximoIteraciones=10;
 const float pc=0.8; 
-const float p_muta=0.3;
-const unsigned int Genes[]={20,20};
+const float p_muta=0.005;
+unsigned int Genes[2]={50,50};
 
 /*Prototipo de funciones*/
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos);
@@ -246,8 +246,9 @@ int SeleccionarPoblacion(POBLACION *pPob)
 
 void EvaluarPoblacion(POBLACION *pPob)
 {	
-	float m=0;
-	unsigned int count=0, i, j, k, max_bit;
+	long double m=0;
+	unsigned int count=0, i, j, k, l;
+	long int max_bit;
 	unsigned int count2=0;
 	
 	/*Decodificacion de los individuos*/
@@ -255,9 +256,13 @@ void EvaluarPoblacion(POBLACION *pPob)
 	{
 		for(j=0; j<Numero_de_Genes; j++)
 		{
-			unsigned char *aux=malloc(Genes[j]);
-			memcpy(aux, pPob->pInd[i].cromosoma+count2*Genes[j], Genes[j]*sizeof(const unsigned int));
-			//memcpy(&aux2[px], &pPob->pInd[madre].cromosoma[px], ((crom_len)-px)*sizeof(unsigned char));	
+			unsigned char *aux=(unsigned char*)malloc(pPob->BitsPorGen[j]*sizeof(unsigned char));
+			//memcpy(aux, &pPob->pInd[i].cromosoma[0]+count2*Genes[j], Genes[j]*sizeof(unsigned int));
+            count2=0;
+			for(k=0, l=count2; l<pPob->BitsPorGen[j]+count2; k++, l++)
+			{
+				aux[k]=pPob->pInd[i].cromosoma[l];
+			}
 			for(k=0; k<Genes[j]; k++)
 			{
 				m+=(aux[k]-'0')*(pow(2,((Genes[j])-1)-count));
@@ -267,14 +272,17 @@ void EvaluarPoblacion(POBLACION *pPob)
 			/*Calculo del fenotipo de los individuos*/
 			max_bit=pow(2, Genes[j]);
 			pPob->pInd[i].valor[j]=(float)((m/(1.0*max_bit))*LimitSup)+LimitInf;
-				
-			/*Evaluacion de la funcion para obtener fitness*/
-			pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
-					-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
 			m=0;
 			count=0;
+			count2+=pPob->BitsPorGen[j];
 			//printf("\n\n");
 		}
+			/*Evaluacion de la funcion para obtener fitness*/
+			//pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
+			//		-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
+			pPob->pInd[i].fit=(pPob->pInd[i].valor[0])*(pPob->pInd[i].valor[0])
+					+(pPob->pInd[i].valor[1])*(pPob->pInd[i].valor[1]);
+
 	}
 
 	//for(i=0; i<Numero_de_Individuos; i++)
@@ -287,9 +295,6 @@ void InicializarPoblacion(POBLACION *pPob)
 	unsigned int i, j, crom_len;
 	float random;
 
-	for(i=0; i<Numero_de_Individuos; i++)
-		pPob->BitsPorGen[i]=Genes[i];
-	
 	crom_len=LongitudCromosoma(pPob);;
 	/*Inicializar un valor entre 0 y 1*/	
 	for(i=0; i<Numero_de_Individuos; i++)
@@ -306,7 +311,7 @@ void InicializarPoblacion(POBLACION *pPob)
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos)
 {
 	POBLACION *pPob;
-	unsigned int i;
+	unsigned int i, crom_len;
 	/*Asignar memoria a la estructura Poblacion*/
 	pPob=(POBLACION*)malloc(sizeof(POBLACION));
 	if(pPob == NULL)
@@ -317,17 +322,19 @@ POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int
 	
 	/*Asignar memoria a la estructura Individuo*/
 	pPob->pInd=(INDIVIDUO*)malloc(sizeof(INDIVIDUO)*Numero_de_Individuos);
-	pPob->BitsPorGen=(unsigned int*)malloc(sizeof(unsigned int)*Numero_de_Genes);
+	//pPob->BitsPorGen=(unsigned int*)malloc(sizeof(unsigned int)*Numero_de_Genes);
+	pPob->BitsPorGen=Genes;
 	if(pPob->pInd == NULL)
 	{
 		printf("Error en memoria\n");
 		exit(0);
 	}
 
+	crom_len=LongitudCromosoma(pPob);
 	for(i=0; i<Numero_de_Individuos; i++)
 		{
-			pPob->pInd[i].cromosoma=(unsigned char*)malloc(sizeof(unsigned char)*LongitudCromosoma(pPob));
-			pPob->pInd[i].valor=(float*)malloc(sizeof(float)*Numero_de_Genes);	
+			pPob->pInd[i].cromosoma=(unsigned char*)malloc(sizeof(unsigned char)*crom_len);
+			pPob->pInd[i].valor=(long double*)malloc(sizeof(long double)*Numero_de_Genes);	
 		}
 
 	return(pPob);
@@ -344,7 +351,7 @@ void EliminarPoblacion(POBLACION *pPob, const unsigned int Numero_de_Individuos)
 	}
 	/*Liberar memoria de los individuos*/
 	free(pPob->pInd);
-	free(pPob->BitsPorGen);
+	//free(pPob->BitsPorGen);
 	/*Liberar memoria de la poblacion*/
 	free(pPob);
 }
