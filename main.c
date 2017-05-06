@@ -28,8 +28,8 @@ typedef struct{
 const unsigned int Numero_de_Genes=2;
 const unsigned int Numero_de_Individuos=5;
 //const unsigned int Bits_por_Gen=10;
-const float LimitInf=-5.12;
-const float LimitSup=5.12;
+const float LimitInf=0;
+const float LimitSup=10;
 unsigned int MaximoIteraciones=10;
 const float pc=0.8; 
 const float p_muta=0.005;
@@ -278,10 +278,10 @@ void EvaluarPoblacion(POBLACION *pPob)
 			//printf("\n\n");
 		}
 			/*Evaluacion de la funcion para obtener fitness*/
-			//pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
-			//		-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
-			pPob->pInd[i].fit=(pPob->pInd[i].valor[0])*(pPob->pInd[i].valor[0])
-					+(pPob->pInd[i].valor[1])*(pPob->pInd[i].valor[1]);
+			pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
+					-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
+			//pPob->pInd[i].fit=(pPob->pInd[i].valor[0])*(pPob->pInd[i].valor[0])
+			//		+(pPob->pInd[i].valor[1])*(pPob->pInd[i].valor[1]);
 
 	}
 
