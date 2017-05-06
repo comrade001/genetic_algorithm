@@ -25,15 +25,14 @@ typedef struct{
 }POBLACION;
 
 /*Variables globales*/
-const unsigned int Numero_de_Genes=2;
-const unsigned int Numero_de_Individuos=5;
-//const unsigned int Bits_por_Gen=10;
-const float LimitInf=0;
-const float LimitSup=10;
-unsigned int MaximoIteraciones=10;
+const unsigned int Numero_de_Genes=30;
+const unsigned int Numero_de_Individuos=50;
+const float LimitInf=-5.12;
+const float LimitSup=5.12;
+unsigned int MaximoIteraciones=100;
 const float pc=0.8; 
-const float p_muta=0.005;
-unsigned int Genes[2]={50,50};
+const float p_muta=0.3;
+unsigned int Genes[30]={[0 ... 29]=20};
 
 /*Prototipo de funciones*/
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos);
@@ -61,11 +60,11 @@ int main()
 	EvaluarPoblacion(pPob);
 	InicializarMejores(pPob);
 
-	while(It<MaximoIteraciones)
+	do
 	{
 		printf("\n--------------------------------\n");
-		printf("\nGeneracion %i: Best=%i\n", It, pPob->idGbest);
-		printf("\n--------------------------------\n");
+		printf("Generacion %i: Best=%i\n", It, pPob->idGbest);
+		printf("--------------------------------\n");
 		MostrarPoblacion(pPob);
 
 		padre=SeleccionarPoblacion(pPob);
@@ -75,7 +74,7 @@ int main()
 		ActualizarMejores(pPob);
 		EvaluarPoblacion(pPob);
 		It++;
-	}
+	}while(pPob->pInd[pPob->idGbest].best_fit>0.05 && It<MaximoIteraciones);
 	
 	/*Liberar espacio en memoria para la poblacion,
 	 * asi como todos sus individuos*/
@@ -101,18 +100,18 @@ void ActualizarMejores(POBLACION *pPob)
 	Best=pPob->pInd[pPob->idGbest].best_fit;
 	for(i=0; i<Numero_de_Individuos; i++)
 	{
-		if(pPob->pInd[i].fit > pPob->pInd[i].best_fit)
+		if(pPob->pInd[i].best_fit > pPob->pInd[i].fit)
 			pPob->pInd[i].best_fit=pPob->pInd[i].fit;
 	
-		if(pPob->pInd[i].best_fit>Best)
+		if(pPob->pInd[i].best_fit < Best)
 		{
 			pPob->idGbest=i;
 			Best=pPob->pInd[i].best_fit;
 		}
 	}
 
-	for(i=0; i<Numero_de_Individuos; i++)
-		pPob->pInd[i].best_fit=0;
+	//for(i=0; i<Numero_de_Individuos; i++)
+	//	pPob->pInd[i].best_fit=0;
 }
 
 void InicializarMejores(POBLACION *pPob)
@@ -123,7 +122,7 @@ void InicializarMejores(POBLACION *pPob)
 	for(k=0; k<Numero_de_Individuos; k++)
 	{
 		pPob->pInd[k].best_fit=pPob->pInd[k].fit;
-		if(pPob->pInd[k].best_fit>Best)
+		if(pPob->pInd[k].best_fit < Best)
 		{
 			pPob->idGbest=k;
 			Best=pPob->pInd[k].best_fit;
@@ -257,31 +256,32 @@ void EvaluarPoblacion(POBLACION *pPob)
 		for(j=0; j<Numero_de_Genes; j++)
 		{
 			unsigned char *aux=(unsigned char*)malloc(pPob->BitsPorGen[j]*sizeof(unsigned char));
-			//memcpy(aux, &pPob->pInd[i].cromosoma[0]+count2*Genes[j], Genes[j]*sizeof(unsigned int));
             count2=0;
 			for(k=0, l=count2; l<pPob->BitsPorGen[j]+count2; k++, l++)
 			{
 				aux[k]=pPob->pInd[i].cromosoma[l];
 			}
-			for(k=0; k<Genes[j]; k++)
+			for(k=0; k<pPob->BitsPorGen[j]; k++)
 			{
-				m+=(aux[k]-'0')*(pow(2,((Genes[j])-1)-count));
+				m+=(aux[k]-'0')*(pow(2,((pPob->BitsPorGen[j])-1)-count));
 				count++;
 			}		
 			free(aux);
 			/*Calculo del fenotipo de los individuos*/
-			max_bit=pow(2, Genes[j]);
+			max_bit=pow(2, pPob->BitsPorGen[j]);
 			pPob->pInd[i].valor[j]=(float)((m/(1.0*max_bit))*LimitSup)+LimitInf;
 			m=0;
 			count=0;
 			count2+=pPob->BitsPorGen[j];
 			//printf("\n\n");
+			pPob->pInd[i].fit+=(pPob->pInd[i].valor[j])*(pPob->pInd[i].valor[j]);
 		}
 			/*Evaluacion de la funcion para obtener fitness*/
-			pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
-					-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
+			//pPob->pInd[i].fit=(50-(pPob->pInd[i].valor[0]-5)*(pPob->pInd[i].valor[0]-5)
+			//		-(pPob->pInd[i].valor[1]-5)*(pPob->pInd[i].valor[1]-5));
 			//pPob->pInd[i].fit=(pPob->pInd[i].valor[0])*(pPob->pInd[i].valor[0])
 			//		+(pPob->pInd[i].valor[1])*(pPob->pInd[i].valor[1]);
+			
 
 	}
 
@@ -306,6 +306,7 @@ void InicializarPoblacion(POBLACION *pPob)
 			else
 				pPob->pInd[i].cromosoma[j]='1';
 		}
+	pPob->pInd[i].fit=0;
 }
 
 POBLACION* CrearPoblacion(const unsigned int Numero_de_Genes, const unsigned int Numero_de_Individuos)
