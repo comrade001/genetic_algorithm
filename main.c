@@ -29,9 +29,9 @@ const unsigned int Numero_de_Genes=30;
 const unsigned int Numero_de_Individuos=50;
 const float LimitInf=-5.12;
 const float LimitSup=5.12;
-unsigned int MaximoIteraciones=100;
+unsigned int MaximoIteraciones=1000;
 const float pc=0.8; 
-const float p_muta=0.3;
+const float p_muta=0.001;
 unsigned int Genes[30]={[0 ... 29]=20};
 
 /*Prototipo de funciones*/
@@ -67,8 +67,12 @@ int main()
 		printf("--------------------------------\n");
 		MostrarPoblacion(pPob);
 
-		padre=SeleccionarPoblacion(pPob);
-		madre=SeleccionarPoblacion(pPob);
+		do
+		{
+			padre=SeleccionarPoblacion(pPob);
+			madre=SeleccionarPoblacion(pPob);
+		}while(padre==madre);
+		
 		CruzarPoblacion(pPob, padre, madre);
 		MutarPoblacion(pPob, padre, madre);
 		ActualizarMejores(pPob);
@@ -222,6 +226,7 @@ int SeleccionarPoblacion(POBLACION *pPob)
 	unsigned int i;
 	float f_t=0.0, p_i[Numero_de_Individuos], offset=0.0;
 	float random=rand()/(float)RAND_MAX;
+	int flecha=0;
 
 	for(i=0; i<Numero_de_Individuos; i++)
 		f_t=f_t+pPob->pInd[i].fit;
@@ -235,7 +240,7 @@ int SeleccionarPoblacion(POBLACION *pPob)
 		offset+=p_i[i];
 		if(random<offset)
 		{
-			//flecha=i;
+			flecha=i;
 			//break;
 			return i;
 		}
